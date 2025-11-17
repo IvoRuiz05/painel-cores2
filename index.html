@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Cores Automático Seguro</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f3f3f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin:0; }
+    .card { background: white; padding:25px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); width:350px; text-align:center; }
+    button { width:100%; padding:10px; border:none; border-radius:8px; background:#0077ff; font-size:17px; color:white; cursor:pointer; margin-bottom:10px; }
+    .secondary-button { background: #28a745; }
+    .danger-button { background: #dc3545; }
+    #resultadoCor { width:120px; height:120px; margin:0 auto; border-radius:10px; border:2px solid #111; }
+    .hidden { display:none; }
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<!-- Tela de Login -->
+<div class="card" id="loginCard">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Senha" required>
+    <button onclick="login()">Entrar</button>
+</div>
+
+<!-- Painel de Cores -->
+<div class="card hidden" id="panelCard">
+    <h2>Painel de Cores</h2>
+    <button onclick="calcularCorAutomatica()">Calcular Cor Automática</button>
+    <div id="resultadoCor"></div>
+    <button class="danger-button" onclick="logout()">Logout</button>
+</div>
+
+<script>
+  // --- Config Firebase ---
+  const firebaseConfig = {
+    apiKey: "SUA_APIKEY",
+    authDomain: "SEU_AUTHDOMAIN",
+    projectId: "SEU_PROJECTID",
+    storageBucket: "SEU_BUCKET",
+    messagingSenderId: "SEU_MSGID",
+    appId: "SEU_APPID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const loginCard = document.getElementById("loginCard");
+  const panelCard = document.getElementById("panelCard");
+
+  // --- Login ---
+  async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      if(!email || !password){ alert("Preencha todos os campos!"); return; }
+      try{
+          await auth.signInWithEmailAndPassword(email,password);
+          showPanel();
+      }catch(e){ alert("Email ou senha incorretos!"); }
+  }
+
+  // --- Logout ---
+  function logout(){
+      auth.signOut();
+      showLogin();
+  }
+
+  // --- Mostrar telas ---
+  function showLogin(){ loginCard.classList.remove("hidden"); panelCard.classList.add("hidden"); }
+  function showPanel(){ loginCard.classList.add("hidden"); panelCard.classList.remove("hidden"); }
+
+  auth.onAuthStateChanged(user => { if(user) showPanel(); else showLogin(); });
+
+  // ======================================
+  // CALCULAR COR AUTOMÁTICA
+  // ======================================
+  async function calcularCorAutomatica(){
+      try{
+          // Faz requisição para sua Firebase Function protegida
+          const res = await fetch("URL_DA_SUA_FUNCTION/calcularCorDouble"); // substitua pela sua URL da Function
+          const data = await res.json();
+          const cor = data.cor; // 'red' ou 'black'
+          document.getElementById("resultadoCor").style.background = cor;
+      }catch(e){
+          console.error(e);
+          alert("Erro ao calcular cor automática.");
+      }
+  }
+</script>
+
+</body>
+</html>
