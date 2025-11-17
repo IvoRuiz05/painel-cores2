@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Cores Seguro Automático</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f3f3f3; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+  .card { background:white; padding:25px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); width:350px; text-align:center; }
+  button { width:100%; padding:10px; border:none; border-radius:8px; background:#0077ff; font-size:17px; color:white; cursor:pointer; margin-bottom:10px; }
+  .danger-button { background:#dc3545; }
+  #resultadoCor { width:120px; height:120px; margin:0 auto; border-radius:10px; border:2px solid #111; }
+  .hidden { display:none; }
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<!-- Login -->
+<div class="card" id="loginCard">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Senha" required>
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- Painel -->
+<div class="card hidden" id="panelCard">
+  <h2>Painel de Cores</h2>
+  <button onclick="calcularCor()">Calcular Cor Automática</button>
+  <div id="resultadoCor"></div>
+  <button class="danger-button" onclick="logout()">Logout</button>
+</div>
+
+<script>
+// --- Config Firebase ---
+const firebaseConfig = {
+  apiKey: "AIzaSyD4Uhb0M5tXzvREMt5XIFksB-L3rzkNGiY",
+  authDomain: "painel-cores.firebaseapp.com",
+  projectId: "painel-cores",
+  storageBucket: "painel-cores.firebasestorage.app",
+  messagingSenderId: "553983470032",
+  appId: "1:553983470032:web:ff95d4cf91ae7a3416b1d5"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// --- Elementos
+const loginCard = document.getElementById("loginCard");
+const panelCard = document.getElementById("panelCard");
+
+// --- Login/Logout ---
+async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  if(!email || !password){ alert("Preencha todos os campos!"); return; }
+  try{ await auth.signInWithEmailAndPassword(email,password); showPanel(); }
+  catch(e){ alert("Email ou senha incorretos!"); }
+}
+
+function logout(){ auth.signOut(); showLogin(); }
+
+function showLogin(){ loginCard.classList.remove("hidden"); panelCard.classList.add("hidden"); }
+function showPanel(){ loginCard.classList.add("hidden"); panelCard.classList.remove("hidden"); }
+
+auth.onAuthStateChanged(user => { if(user) showPanel(); else showLogin(); });
+
+// --- Tabela criptografada (Base64) ---
+const tabelaBase64 = [
+  "dnZwdnZ2cHlwdnZ2cHB2dnZ2", "cHBwcHB2cHh2dnB2dnB2cHB2", "dnZwdnZ2cHBwcHBwcHBwdnZ2",
+  "dnZ2cHZ2dnZwdnZ2dnZwcHZ2", "cHB2dnZwdnZ2dnZwcHBwdnZ2", "cHZwdnZwdnZ2dnZwdnBwcHZ2",
+  "dnZ2dnZwdnZwcHB2dnZwdnZ2", "cHZwdnZ2dnZwcHZ2dnZ2cHB2", "dnZwdnZwdnZ2dnZ2dnZ2dnZ2",
+  "cHZ2dnZwcHB2dnZ2dnZ2dnZ2", "dnZwcHBwcHZ2dnZdnB2cHB2", "dnZ2dnZ2dnZwcHB2cHBwcHB2",
+  "dnZwdnZwcHB2dnZ2dnZwcHB2", "dnZwdnZ2cHBwcHBwcHZ2dnZ2", "dnZ2cHBwcHB2cHBwcHBwcHBw"
+];
+
+// Função para decodificar Base64
+function decodificarLinha(base64){ return atob(base64); }
+
+// --- Calcular cor automática ---
+function calcularCor(){
+  // Aqui você pode implementar como vai pegar o histórico do Double
+  // Exemplo: pegar os últimos números manualmente
+  const linhaIdx = Math.floor(Math.random()*15);
+  const colunaIdx = Math.floor(Math.random()*15);
+
+  const linha = decodificarLinha(tabelaBase64[linhaIdx]);
+  const letra = linha[colunaIdx];
+  const cor = letra === "v" ? "red" : "black";
+
+  document.getElementById("resultadoCor").style.background = cor;
+}
+</script>
+
+</body>
+</html>
